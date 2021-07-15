@@ -1,4 +1,4 @@
-use super::QueuedBlock;
+use super::work_reprocessing_queue::ReprocessQueueMessage;
 use crate::{service::NetworkMessage, sync::SyncMessage};
 use beacon_chain::{BeaconChain, BeaconChainTypes};
 use slog::{error, Logger};
@@ -25,7 +25,7 @@ impl<T: BeaconChainTypes> Worker<T> {
     /// Send a message to `sync_tx`.
     ///
     /// Creates a log if there is an internal error.
-    fn send_sync_committee_message(&self, message: SyncMessage<T::EthSpec>) {
+    fn send_sync_message(&self, message: SyncMessage<T::EthSpec>) {
         self.sync_tx.send(message).unwrap_or_else(|e| {
             error!(self.log, "Could not send message to the sync service";
                 "error" => %e)
@@ -46,5 +46,5 @@ impl<T: BeaconChainTypes> Worker<T> {
 /// Contains the necessary items for a worker to do their job.
 pub struct Toolbox<T: BeaconChainTypes> {
     pub idle_tx: mpsc::Sender<()>,
-    pub delayed_block_tx: mpsc::Sender<QueuedBlock<T>>,
+    pub work_reprocessing_tx: mpsc::Sender<ReprocessQueueMessage<T>>,
 }
